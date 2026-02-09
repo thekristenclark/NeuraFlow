@@ -37,7 +37,7 @@ The application uses the following technologies:
 - **Node.js** - planned backend integration)**
 - **VS Code** – Recommended editor
 
-This stack enables rapid prototyping on both iOS and Android devices. :contentReference[oaicite:1]{index=1}
+This stack enables rapid prototyping on both iOS and Android devices.
 
 ---
 
@@ -76,10 +76,6 @@ Run the app using:
 ARCHITECTURE.md – Application structure and design decisions
 
 ROADMAP.md – Planned features and development phases
-
----
-
-
 
 ---
 
