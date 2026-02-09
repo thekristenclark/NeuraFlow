@@ -37,11 +37,9 @@ const TOTAL_TRIALS = 20;
    Screen
 ------------------------------*/
 export default function TrainingScreen() {
-  const [currentStimulus, setCurrentStimulus] =
-    useState<Stimulus | null>(null);
+  const [currentStimulus, setCurrentStimulus] = useState<Stimulus | null>(null);
 
-  const [stimulusStartTime, setStimulusStartTime] =
-    useState<number | null>(null);
+  const [stimulusStartTime, setStimulusStartTime] = useState<number | null>(null);
 
   const [results, setResults] = useState<TrialResult[]>([]);
   const [trialCount, setTrialCount] = useState(0);
@@ -80,8 +78,7 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
       return;
     }
 
-    const stimulus: Stimulus =
-      Math.random() < 0.7 ? "GO" : "NOGO";
+    const stimulus: Stimulus = Math.random() < 0.7 ? "GO" : "NOGO";
 
     setCurrentStimulus(stimulus);
     setStimulusStartTime(Date.now());
@@ -99,10 +96,7 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     endTrial(true, reactionTime);
   }
 
-  function endTrial(
-    responded: boolean,
-    reactionTime: number | null = null
-  ) {
+  function endTrial(responded: boolean, reactionTime: number | null = null) {
     if (!currentStimulus || !stimulusStartTime) return;
 
     const correct =
@@ -122,36 +116,25 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     setStimulusStartTime(null);
     clearTimeouts();
 
-    timeoutRef.current = setTimeout(
-      startTrial,
-      INTER_TRIAL_INTERVAL
-    );
+    timeoutRef.current = setTimeout(startTrial, INTER_TRIAL_INTERVAL);
   }
 
   /* -----------------------------
      Persistence
   ------------------------------*/
   async function saveSession(results: TrialResult[]) {
-    try {
-      const stored = await AsyncStorage.getItem("sessions");
-      const sessions: Session[] = stored
-        ? JSON.parse(stored)
-        : [];
+    const stored = await AsyncStorage.getItem("sessions");
+    const sessions: Session[] = stored ? JSON.parse(stored) : [];
 
-      sessions.push({
-        id: Date.now(),
-        date: new Date().toISOString(),
-        results,
-      });
+    sessions.push({
+      id: Date.now(),
+      date: new Date().toISOString(),
+      results,
+     });
 
-      await AsyncStorage.setItem(
-        "sessions",
-        JSON.stringify(sessions)
-      );
-    } catch (err) {
-      console.error("Failed to save session", err);
+    await AsyncStorage.setItem("sessions", JSON.stringify(sessions));
     }
-  }
+  
 
   /* -----------------------------
      Cleanup
