@@ -36,7 +36,7 @@ const TOTAL_TRIALS = 20;
 /* -----------------------------
    Screen
 ------------------------------*/
-export default function trainingScreen() {
+export default function TrainingScreen() {
   const [currentStimulus, setCurrentStimulus] =
     useState<Stimulus | null>(null);
 
@@ -47,7 +47,7 @@ export default function trainingScreen() {
   const [trialCount, setTrialCount] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* -----------------------------
      Task Logic
