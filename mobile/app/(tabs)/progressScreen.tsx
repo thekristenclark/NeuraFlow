@@ -32,27 +32,49 @@ export default function progressScreen() {
     }, [])
   );
 
-  function accuracy(session: Session) {
-    return (
-      session.results.filter(r => r.correct).length /
-      session.results.length
+  function accuracy(session: Session): number {
+
+    const totalTrials = session.results.length;
+
+    if (totalTrials === 0) return 0; // prevents errors if no trials yet
+
+    // Count how many trials were correct
+    const correctTrials = session.results.reduce(
+      (count, trial) => 
+        // If this trial is correct, add 1 to the count
+        // Otherwise, add 0
+        count + (trial.correct ? 1 : 0),
+      0 // Start counting from 0
     );
+
+    return correctTrials / totalTrials;
   }
 
   function avgRT(session: Session): number | null {
-    const goTrials = session.results.filter(
-      r => r.stimulus === "GO" && r.reactionTime !== null
-    );
+    
+    let totalRT = 0; // Variable to store the total reaction time
+    let count = 0; // Variable to count how many valid GO trials we include
 
-    if (goTrials.length === 0) return null;
+    // Loop through every trial in the session
+    for (const trial of session.results) {
 
-      const total = goTrials.reduce(
-        (sum, r) => sum + r.reactionTime!, 0);
+      // Only include GO trials that have a recorded reaction time
+      if (trial.stimulus === "GO" && trial.reactionTime !== null) {
+        
+        totalRT += trial.reactionTime; // Add this trial's reaction time to the total
+        count++; // Increase the count of valid trials
+      }
+    }
 
-    return total / goTrials.length;
+    // If no valid GO trials were found, return null
+    if (count === 0) return null;
+
+    // Otherwise, return the average reaction time
+    return totalRT / count;
   }
 
 
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Progress</Text>
