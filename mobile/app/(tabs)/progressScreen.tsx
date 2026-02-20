@@ -99,7 +99,7 @@ export default function progressScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {padding: 20, backgroundColor: '#F0F4F8', paddingBottom: 40},
+  container: {paddingTop: 70, padding: 20, backgroundColor: '#F0F4F8', paddingBottom: 40},
   title: { fontSize: 28, fontWeight: '600', marginBottom: 20, color: '#333', textAlign: "center"},
   subtitle: { fontSize: 16, color: '#555', textAlign: 'center' },
   card: {backgroundColor: "white", padding: 16, borderRadius: 10, marginBottom: 12,},
