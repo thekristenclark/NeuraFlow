@@ -38,14 +38,17 @@ const TOTAL_TRIALS = 20;
 ------------------------------*/
 export default function TrainingScreen() {
   const [currentStimulus, setCurrentStimulus] = useState<Stimulus | null>(null);
-
   const [stimulusStartTime, setStimulusStartTime] = useState<number | null>(null);
-
   const [results, setResults] = useState<TrialResult[]>([]);
   const [trialCount, setTrialCount] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
-const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<"correct" | "error" | null>(null);
+  const [sessionComplete, setSessionComplete] = useState(false);
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /* -----------------------------
      Task Logic
@@ -53,8 +56,10 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   function startSession() {
     setResults([]);
     setTrialCount(0);
+    setSessionComplete(false);
+    setFeedback(null);
     setIsRunning(true);
-    startTrial();
+    timeoutRef.current = setTimeout(startTrial, INTER_TRIAL_INTERVAL);
   }
 
   function stopSession(finalResults: TrialResult[]) {
@@ -62,7 +67,7 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     setCurrentStimulus(null);
     setStimulusStartTime(null);
     clearTimeouts();
-    saveSession(results);
+    if (finalResults) saveSession(finalResults);
   }
 
   function clearTimeouts() {
@@ -73,26 +78,32 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   }
 
   function startTrial() {
-    if (trialCount >= TOTAL_TRIALS) {
-      stopSession();
-      return;
+  // Use a functional update to get the latest trial count
+  setTrialCount(prevCount => {
+    if (prevCount >= TOTAL_TRIALS) {
+      stopSession(results);
+      return prevCount;
     }
 
     const stimulus: Stimulus = Math.random() < 0.7 ? "GO" : "NOGO";
 
     setCurrentStimulus(stimulus);
     setStimulusStartTime(Date.now());
-    setTrialCount(prev => prev + 1);
 
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => { // auto-end trial after stimulus duration
       endTrial(false);
     }, STIMULUS_DURATION);
+
+    return prevCount;
+  });
+
   }
 
   function handlePress() {
     if (!currentStimulus || !stimulusStartTime) return;
 
     const reactionTime = Date.now() - stimulusStartTime;
+    clearTimeout(timeoutRef.current!); // stop auto timeout
     endTrial(true, reactionTime);
   }
 
@@ -112,9 +123,16 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     };
 
     setResults(prev => [...prev, trial]);
+    setTrialCount(prev => prev + 1);
+
     setCurrentStimulus(null);
     setStimulusStartTime(null);
     clearTimeouts();
+
+    if (trialCount + 1 >= TOTAL_TRIALS) {
+      stopSession([...results, trial]);
+      return;
+    }
 
     timeoutRef.current = setTimeout(startTrial, INTER_TRIAL_INTERVAL);
   }
