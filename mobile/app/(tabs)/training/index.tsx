@@ -57,7 +57,7 @@ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     startTrial();
   }
 
-  function stopSession() {
+  function stopSession(finalResults: TrialResult[]) {
     setIsRunning(false);
     setCurrentStimulus(null);
     setStimulusStartTime(null);
