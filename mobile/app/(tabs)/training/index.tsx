@@ -86,7 +86,6 @@ export default function TrainingScreen() {
     }
 
     const stimulus: Stimulus = Math.random() < 0.7 ? "GO" : "NOGO";
-
     setCurrentStimulus(stimulus);
     setStimulusStartTime(Date.now());
 
@@ -122,9 +121,11 @@ export default function TrainingScreen() {
       timestamp: Date.now(),
     };
 
+    // Save trial results
     setResults(prev => [...prev, trial]);
     setTrialCount(prev => prev + 1);
 
+    // Clear current stimulus
     setCurrentStimulus(null);
     setStimulusStartTime(null);
     clearTimeouts();
