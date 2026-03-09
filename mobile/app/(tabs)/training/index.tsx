@@ -1,166 +1,25 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { useGoNoGoTask } from "../../../hooks/use-go-no-go-task";
+
 
 /* -----------------------------
-   Types
-------------------------------*/
-type Stimulus = "GO" | "NOGO";
-
-type TrialResult = {
-  stimulus: Stimulus;
-  responded: boolean;
-  correct: boolean;
-  reactionTime: number | null;
-  timestamp: number;
-};
-
-type Session = {
-  id: number;
-  date: string;
-  results: TrialResult[];
-};
-
-/* -----------------------------
-   Constants
-------------------------------*/
-const STIMULUS_DURATION = 800; // ms
-const INTER_TRIAL_INTERVAL = 700; // ms
-const TOTAL_TRIALS = 20;
-
-/* -----------------------------
-   Screen
+   Screen (UI Controller Only)
+   NeuraFlow - Go / No-Go Training
 ------------------------------*/
 export default function TrainingScreen() {
-  const [currentStimulus, setCurrentStimulus] = useState<Stimulus | null>(null);
-  const [stimulusStartTime, setStimulusStartTime] = useState<number | null>(null);
-  const [results, setResults] = useState<TrialResult[]>([]);
-  const [trialCount, setTrialCount] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<"correct" | "error" | null>(null);
-  const [sessionComplete, setSessionComplete] = useState(false);
-
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  /* -----------------------------
-     Task Logic
-  ------------------------------*/
-  function startSession() {
-    setResults([]);
-    setTrialCount(0);
-    setSessionComplete(false);
-    setFeedback(null);
-    setIsRunning(true);
-    timeoutRef.current = setTimeout(startTrial, INTER_TRIAL_INTERVAL);
-  }
-
-  function stopSession(finalResults: TrialResult[]) {
-    setIsRunning(false);
-    setCurrentStimulus(null);
-    setStimulusStartTime(null);
-    clearTimeouts();
-    if (finalResults) saveSession(finalResults);
-  }
-
-  function clearTimeouts() {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }
-
-  function startTrial() {
-  // Use a functional update to get the latest trial count
-  setTrialCount(prevCount => {
-    if (prevCount >= TOTAL_TRIALS) {
-      stopSession(results);
-      return prevCount;
-    }
-
-    const stimulus: Stimulus = Math.random() < 0.7 ? "GO" : "NOGO";
-    setCurrentStimulus(stimulus);
-    setStimulusStartTime(Date.now());
-
-    timeoutRef.current = setTimeout(() => { // auto-end trial after stimulus duration
-      endTrial(false);
-    }, STIMULUS_DURATION);
-
-    return prevCount;
-  });
-
-  }
-
-  function handlePress() {
-    if (!currentStimulus || !stimulusStartTime) return;
-
-    const reactionTime = Date.now() - stimulusStartTime;
-    clearTimeout(timeoutRef.current!); // stop auto timeout
-    endTrial(true, reactionTime);
-  }
-
-  function endTrial(responded: boolean, reactionTime: number | null = null) {
-    if (!currentStimulus || !stimulusStartTime) return;
-
-    const correct =
-      (currentStimulus === "GO" && responded) ||
-      (currentStimulus === "NOGO" && !responded);
-
-    const trial: TrialResult = {
-      stimulus: currentStimulus,
-      responded,
-      correct,
-      reactionTime,
-      timestamp: Date.now(),
-    };
-
-    // Save trial results
-    setResults(prev => [...prev, trial]);
-    setTrialCount(prev => prev + 1);
-
-    // Clear current stimulus
-    setCurrentStimulus(null);
-    setStimulusStartTime(null);
-    clearTimeouts();
-
-    if (trialCount + 1 >= TOTAL_TRIALS) {
-      stopSession([...results, trial]);
-      return;
-    }
-
-    timeoutRef.current = setTimeout(startTrial, INTER_TRIAL_INTERVAL);
-  }
-
-  /* -----------------------------
-     Persistence
-  ------------------------------*/
-  async function saveSession(results: TrialResult[]) {
-    const stored = await AsyncStorage.getItem("sessions");
-    const sessions: Session[] = stored ? JSON.parse(stored) : [];
-
-    sessions.push({
-      id: Date.now(),
-      date: new Date().toISOString(),
-      results,
-     });
-
-    await AsyncStorage.setItem("sessions", JSON.stringify(sessions));
-    }
-  
-
-  /* -----------------------------
-     Cleanup
-  ------------------------------*/
-  useEffect(() => {
-    return () => clearTimeouts();
-  }, []);
+  const {
+    isRunning,
+    currentStimulus,
+    trialCount,
+    totalTrials,
+    startSession,
+    handlePress,
+  } = useGoNoGoTask();
 
   /* -----------------------------
      UI
@@ -200,7 +59,7 @@ export default function TrainingScreen() {
       )}
 
       <Text style={styles.counter}>
-        Trial {trialCount} / {TOTAL_TRIALS}
+        Trial {trialCount} / {totalTrials}
       </Text>
     </Pressable>
   );
