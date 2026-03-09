@@ -32,7 +32,7 @@ export default function TabLayout() {
         }}
       />
             <Tabs.Screen
-        name="trainingScreen"
+        name="training/index"
         options={{
           title: 'Training',
           tabBarIcon: ({ color, size }) => <Ionicons name="barbell" size={size} color={color} />,
