@@ -25,7 +25,7 @@ export default function index() {
       <View style={styles.buttonContainer}>
         <Button
           title="Start Training"
-          onPress={() => router.push('/(tabs)/trainingScreen')}
+          onPress={() => router.push('/(tabs)/training')}
         />
       </View>
 
